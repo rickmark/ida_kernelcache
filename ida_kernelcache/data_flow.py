@@ -15,13 +15,15 @@ this module does not take that approach, for reasons of simplicity and efficienc
 
 """
 
+from __future__ import absolute_import
 import collections
 
 import idc
 import idautils
 import idaapi
 
-import ida_utilities as idau
+from . import ida_utilities as idau
+from six.moves import range
 
 _log = idau.make_log(2, __name__)
 
@@ -161,7 +163,7 @@ def _pointer_accesses_process_block(start, end, fix, entry_regs, accesses):
             # does not use the temporary registers after a call, but just to be safe, clear all the
             # temporary registers.
             _log(6, '\t\t{:x}  clear temps', insn.ea)
-            for r in xrange(0, 19):
+            for r in range(0, 19):
                 regs.pop(getattr(idautils.procregs, 'X{}'.format(r)).reg, None)
         else:
             # This is an unrecognized instruction. Clear all the registers it modifies.

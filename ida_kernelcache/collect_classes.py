@@ -5,17 +5,20 @@
 # Collects information about C++ classes in a kernelcache.
 #
 
+from __future__ import absolute_import
 from collections import defaultdict
 
 import idc
 import idautils
 import idaapi
 
-import ida_utilities as idau
-import classes
-import segment
-import symbol
-import vtable
+from . import ida_utilities as idau
+from . import classes
+from . import segment
+from . import symbol
+from . import vtable
+import six
+from six.moves import range
 
 _log = idau.make_log(1, __name__)
 
@@ -53,7 +56,7 @@ class _Regs(object):
             pass
 
     def _reg(self, reg):
-        if isinstance(reg, (int, long)):
+        if isinstance(reg, six.integer_types):
             reg = _Regs._reg_names[reg]
         return reg
 

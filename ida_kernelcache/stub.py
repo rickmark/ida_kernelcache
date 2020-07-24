@@ -5,14 +5,15 @@
 # Functions for analyzing stub functions in the kernelcache.
 #
 
+from __future__ import absolute_import
 import re
 
 import idc
 import idautils
 import idaapi
 
-import ida_utilities as idau
-import internal
+from . import ida_utilities as idau
+from . import internal
 
 _log = idau.make_log(1, __name__)
 

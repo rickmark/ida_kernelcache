@@ -10,6 +10,7 @@ TODO: A lot of functions in this module really have to do with processing type s
 strings.
 """
 
+from __future__ import absolute_import
 import re
 
 import idc

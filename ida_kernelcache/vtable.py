@@ -5,15 +5,17 @@
 # Functions for analyzing and symbolicating vtables in the kernelcache.
 #
 
+from __future__ import absolute_import
 from itertools import islice, takewhile
 
 import idc
 import idautils
 
-from symbol import vtable_symbol_for_class
-import ida_utilities as idau
-import classes
-import stub
+from .symbol import vtable_symbol_for_class
+from . import ida_utilities as idau
+from . import classes
+from . import stub
+from six.moves import range
 
 _log = idau.make_log(0, __name__)
 
@@ -208,7 +210,7 @@ def vtable_methods(vtable, start=VTABLE_OFFSET, length=None, nmethods=None):
     elif length is None:
         length = vtable_length(vtable)
     # Read the methods.
-    for i in xrange(start, length):
+    for i in range(start, length):
         yield idau.read_word(vtable + i * idau.WORD_SIZE)
 
 def class_vtable_methods(classinfo, nmethods=None, new=False):
@@ -271,7 +273,7 @@ def vtable_overrides(class_vtable, super_vtable, class_vlength=None, super_vleng
     else:
         nmethods = super_vlength
     # Iterate through the methods.
-    for i in xrange(nmethods):
+    for i in range(nmethods):
         # Read the old method.
         super_method = None
         if i < super_vlength:

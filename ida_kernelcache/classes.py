@@ -7,9 +7,10 @@
 # information about C++ classes and populate global variables with the result.
 #
 
-import collect_classes
-import ida_utilities as idau
-import vtable
+from __future__ import absolute_import
+from . import collect_classes
+from . import ida_utilities as idau
+from . import vtable
 
 class_info = {}
 """A global map from class names to ClassInfo objects. See collect_class_info()."""

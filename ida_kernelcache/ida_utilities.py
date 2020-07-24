@@ -5,11 +5,14 @@
 # Some utility functions to make working with IDA easier.
 #
 
+from __future__ import absolute_import
+from __future__ import print_function
 from collections import deque
 
 import idc
 import idautils
 import idaapi
+from six.moves import range
 
 def make_log(log_level, module):
     """Create a logging function."""
@@ -17,7 +20,7 @@ def make_log(log_level, module):
         if len(args) == 0:
             return level <= log.level
         if level <= log.level:
-            print module + ': ' + args[0].format(*args[1:])
+            print(module + ': ' + args[0].format(*args[1:]))
     log.level = log_level
     return log
 
@@ -253,7 +256,7 @@ def _instructions_by_range(start, end):
 
 def _instructions_by_count(pc, count):
     """A generator to iterate over a specified number of instructions."""
-    for i in xrange(count):
+    for i in range(count):
         insn = idautils.DecodeInstruction(pc)
         if insn is None:
             break

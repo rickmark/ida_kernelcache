@@ -5,11 +5,12 @@
 # A module for working with OSMetaClass instances in the kernelcache.
 #
 
+from __future__ import absolute_import
 import idc
 
-import ida_utilities as idau
-import classes
-import symbol
+from . import ida_utilities as idau
+from . import classes
+from . import symbol
 
 _log = idau.make_log(0, __name__)
 

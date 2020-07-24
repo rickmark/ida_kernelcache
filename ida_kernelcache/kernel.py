@@ -6,12 +6,13 @@
 # prior initialization via ida_kernelcache is necessary.
 #
 
+from __future__ import absolute_import
 import idc
 import idautils
 import idaapi
 
-import ida_utilities as idau
-import kplist
+from . import ida_utilities as idau
+from . import kplist
 
 _log = idau.make_log(0, __name__)
 

@@ -7,6 +7,8 @@
 #   { selector, input_scalars_count, input_structure_size, output_scalars_count, output_structure_size }
 #
 
+from __future__ import absolute_import
+from __future__ import print_function
 def kernelcache_process_external_methods(ea=None, struct_type=None, count=None):
     import idc
     import ida_kernelcache as kc
@@ -92,22 +94,22 @@ def kernelcache_process_external_methods(ea=None, struct_type=None, count=None):
             if check(obj):
                 break
         else:
-            print 'Address {:#x} does not look like any known external method struct'.format(ea)
+            print('Address {:#x} does not look like any known external method struct'.format(ea))
             return False
     else:
         if struct_type not in TYPE_MAP:
-            print 'Unknown external method struct type {}'.format(struct_type)
+            print('Unknown external method struct type {}'.format(struct_type))
             return False
         check, process = TYPE_MAP[struct_type]
         obj = idau.read_struct(ea, struct=struct_type, asobject=True)
         if not check(obj):
-            print 'Address {:#x} does not look like {}'.format(ea, struct_type)
+            print('Address {:#x} does not look like {}'.format(ea, struct_type))
 
     # Process the external methods.
     selector = 0;
     while (count is None and check(obj)) or (selector < count):
         isc, iss, osc, oss = process(obj)
-        print '{{ {:3}, {:5}, {:#10x}, {:5}, {:#10x} }}'.format(selector, isc, iss, osc, oss)
+        print('{{ {:3}, {:5}, {:#10x}, {:5}, {:#10x} }}'.format(selector, isc, iss, osc, oss))
         selector += 1
         ea += len(obj)
         obj = idau.read_struct(ea, struct=struct_type, asobject=True)

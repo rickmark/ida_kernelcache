@@ -11,11 +11,12 @@ In an alternative implementation, we could just add cross-references in IDA. How
 approach is better because it is closer to what the kernelcache looks like at runtime.
 """
 
+from __future__ import absolute_import
 import idc
 import idautils
 
-import ida_utilities as idau
-import kernel
+from . import ida_utilities as idau
+from . import kernel
 
 _log = idau.make_log(1, __name__)
 

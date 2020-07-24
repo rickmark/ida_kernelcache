@@ -6,10 +6,12 @@
 # necessary.
 #
 
+from __future__ import absolute_import
 import idc
 
-import ida_utilities as idau
-import kernel
+from . import ida_utilities as idau
+from . import kernel
+from six.moves import range
 
 _log = idau.make_log(0, __name__)
 

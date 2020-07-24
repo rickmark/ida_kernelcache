@@ -5,6 +5,8 @@
 # Use ida_kernelcache to find classes that override a virtual method.
 #
 
+from __future__ import absolute_import
+from __future__ import print_function
 def kernelcache_find_virtual_method_overrides(classname=None, method=None):
     import idc
     import idaapi
@@ -34,17 +36,17 @@ Find virtual method overrides
         f.method.value    = method    or ''
         ok = f.Execute()
         if ok != 1:
-            print 'Cancelled'
+            print('Cancelled')
             return False
         classname = f.classname.value
         method    = f.method.value
         f.Free()
 
     if classname not in kc.class_info:
-        print 'Not a valid class: {}'.format(classname)
+        print('Not a valid class: {}'.format(classname))
         return False
 
-    print 'Subclasses of {} that override {}:'.format(classname, method)
+    print('Subclasses of {} that override {}:'.format(classname, method))
     baseinfo = kc.class_info[classname]
     found = False
     for classinfo in baseinfo.descendants():
@@ -54,10 +56,10 @@ Find virtual method overrides
             demangled = idc.Demangle(name, idc.GetLongPrm(idc.INF_SHORT_DN))
             name = demangled if demangled else name
             if method in name:
-                print '{:#x}  {}'.format(override, classinfo.classname)
+                print('{:#x}  {}'.format(override, classinfo.classname))
                 found = True
     if not found:
-        print 'No subclass of {} overrides {}'.format(classname, method)
+        print('No subclass of {} overrides {}'.format(classname, method))
     return found
 
 kernelcache_find_virtual_method_overrides()

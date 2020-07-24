@@ -5,6 +5,8 @@
 # Populate a class or struct using data flow analysis.
 #
 
+from __future__ import absolute_import
+from __future__ import print_function
 def kernelcache_populate_struct(struct=None, address=None, register=None, delta=None):
     import idc
     import idautils
@@ -41,7 +43,7 @@ Automatically populate struct fields
         f.delta.value     = delta or 0
         ok = f.Execute()
         if ok != 1:
-            print 'Cancelled'
+            print('Cancelled')
             return False
         struct   = f.structure.value
         address  = f.address.value
@@ -56,12 +58,12 @@ Automatically populate struct fields
     # Open the structure.
     sid = idau.struct_open(struct, create=True)
     if sid is None:
-        print 'Could not open struct {}'.format(struct)
+        print('Could not open struct {}'.format(struct))
         return False
 
     # Check that the address is in a function.
     if not idaapi.get_func(address):
-        print 'Address {:#x} is not a function'.format(address)
+        print('Address {:#x} is not a function'.format(address))
         return False
 
     # Get the register id.
@@ -72,20 +74,20 @@ Automatically populate struct fields
         register_id = register
         register    = idaapi.get_reg_name(register_id, 8)
     if register_id is None or register_id < 0:
-        print 'Invalid register {}'.format(register)
+        print('Invalid register {}'.format(register))
         return False
 
     # Validate delta.
     if delta < 0 or delta > 0x1000000:
-        print 'Invalid delta {}'.format(delta)
+        print('Invalid delta {}'.format(delta))
         return False
     elif is_class and delta != 0:
-        print 'Nonzero delta not yet supported'
+        print('Nonzero delta not yet supported')
         return False
 
     type_name = 'class' if is_class else 'struct'
-    print '{} = {}, address = {:#x}, register = {}, delta = {:#x}'.format(type_name, struct,
-            address, register, delta)
+    print('{} = {}, address = {:#x}, register = {}, delta = {:#x}'.format(type_name, struct,
+            address, register, delta))
 
     if is_class:
         # Run the analysis.
@@ -106,7 +108,7 @@ Automatically populate struct fields
                             idau.insn_op_stroff(insn, op.n, sid, delta)
 
     # All done! :)
-    print 'Done'
+    print('Done')
     return True
 
 kernelcache_populate_struct()

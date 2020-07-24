@@ -6,6 +6,7 @@
 # modules.
 #
 
+from __future__ import absolute_import
 import sys
 for mod in sys.modules.keys():
     if 'ida_kernelcache' in mod:

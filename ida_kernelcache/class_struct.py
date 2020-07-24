@@ -116,18 +116,19 @@ avoid over-complicating this module by trying to do that here. Instead, I imagin
       corresponding method, and set the type of the field accordingly.
 """
 
+from __future__ import absolute_import
 import collections
 
 import idc
 import idautils
 import idaapi
 
-import ida_utilities as idau
-import build_struct
-import classes
-import data_flow
-import symbol
-import vtable
+from . import ida_utilities as idau
+from . import build_struct
+from . import classes
+from . import data_flow
+from . import symbol
+from . import vtable
 
 _log = idau.make_log(2, __name__)
 

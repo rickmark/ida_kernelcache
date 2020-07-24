@@ -6,6 +6,7 @@
 #   - https://github.com/python/cpython/blob/3.6/Lib/plistlib.py
 #
 
+from __future__ import absolute_import
 import base64
 from xml.etree.ElementTree import XMLTreeBuilder
 
@@ -51,7 +52,7 @@ class _KPlistBuilder(object):
         self.attributes       = {
                 'integer':    ('size',),
         }
-        self.tags = set(self.start_handler.keys()).union(self.end_handler.keys())
+        self.tags = set(self.start_handler.keys()).union(list(self.end_handler.keys()))
 
     # XMLTreeBuilder calls.
 
