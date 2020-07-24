@@ -99,7 +99,7 @@ Automatically populate struct fields
         kc.build_struct.create_struct_fields(sid, accesses=accesses)
 
         # Set the offsets to stroff.
-        for addresses_and_deltas in accesses.values():
+        for addresses_and_deltas in list(accesses.values()):
             for ea, delta in addresses_and_deltas:
                 insn = idautils.DecodeInstruction(ea)
                 if insn:

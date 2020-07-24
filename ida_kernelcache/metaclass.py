@@ -64,7 +64,7 @@ def initialize_metaclass_symbols():
     instance.
     """
     classes.collect_class_info()
-    for classname, classinfo in classes.class_info.items():
+    for classname, classinfo in list(classes.class_info.items()):
         if classinfo.metaclass:
             _log(1, 'Class {} has OSMetaClass instance at {:#x}', classname, classinfo.metaclass)
             if not add_metaclass_symbol(classinfo.metaclass, classname):

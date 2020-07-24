@@ -212,9 +212,9 @@ def _create_vtable_struct(classinfo):
 def initialize_vtable_structs():
     """Create IDA structs representing the C++ virtual method tables in the kernel."""
     classes.collect_class_info()
-    for classinfo in classes.class_info.values():
+    for classinfo in list(classes.class_info.values()):
         _create_vmethods_struct(classinfo)
-    for classinfo in classes.class_info.values():
+    for classinfo in list(classes.class_info.values()):
         _create_vtable_struct(classinfo)
 
 #### Classes based on struct slices ###############################################################
@@ -354,7 +354,7 @@ def initialize_class_structs(style=DEFAULT_STYLE):
     """
     # A generator that will yield (virtual_method, classname, X0).
     def virtual_methods():
-        for classinfo in classes.class_info.values():
+        for classinfo in list(classes.class_info.values()):
             for _, vmethod, _ in vtable.class_vtable_overrides(classinfo, new=True, methods=True):
                 if not idau.is_function_start(vmethod):
                     _log(3, 'Non-function virtual method {:#x} in class {}', vmethod,
@@ -387,7 +387,7 @@ def _classify_class_accesses(all_accesses, style):
     def log_addrs(addresses_and_deltas):
         return ', '.join('{:#x}'.format(ea) for ea, dt in addresses_and_deltas)
     # For each class, look at the accesses associated with that class.
-    for classname, accesses in all_accesses.items():
+    for classname, accesses in list(all_accesses.items()):
         classinfo = classes.class_info.get(classname)
         if not classinfo:
             _log(-1, 'Skipping non-existent class {}', classname)
@@ -397,7 +397,7 @@ def _classify_class_accesses(all_accesses, style):
         # class, that's the class it goes with.
         ancestors = list(classinfo.ancestors(inclusive=True))
         all_classes.update(ancestors)
-        for offset_and_size, addresses_and_deltas in accesses.items():
+        for offset_and_size, addresses_and_deltas in list(accesses.items()):
             offset, size = offset_and_size
             # Accesses to offsets 0-8 are actually not considered part of the ::fields struct since
             # they technically access the vtable. Skip it.
@@ -439,7 +439,7 @@ def _classify_class_accesses(all_accesses, style):
 
 def _convert_operands_to_struct_offsets(access_addresses):
     """Convert the operands that generated struct accesses into struct offsets."""
-    for classname, addresses_and_deltas in access_addresses.items():
+    for classname, addresses_and_deltas in list(access_addresses.items()):
         sid = idau.struct_open(classname)
         if sid is not None:
             for ea, delta in addresses_and_deltas:
@@ -501,7 +501,7 @@ def process_functions(functions, style=DEFAULT_STYLE):
         if data is not None:
             class_structs[classinfo] = data
     # Populate the class's structs using the access tuples.
-    for classinfo, data in class_structs.items():
+    for classinfo, data in list(class_structs.items()):
         _populate_class_structs(classinfo, class_accesses, *data)
     # Finally, convert each operand that generated an access into an appropriately typed struct
     # offset reference.
@@ -544,6 +544,6 @@ def propagate_virtual_method_types_to_vtable_structs():
     By default, IDA will guess a type with an empty argument list for any function whose symbol
     includes an unknown struct type, which inhibits proper type inference.
     """
-    for classinfo in classes.class_info.values():
+    for classinfo in list(classes.class_info.values()):
         _propagate_virtual_method_types_for_class(classinfo)
 

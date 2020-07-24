@@ -16,6 +16,7 @@ this module does not take that approach, for reasons of simplicity and efficienc
 """
 
 from __future__ import absolute_import
+from builtins import range
 import collections
 
 import idc
@@ -84,7 +85,7 @@ def _pointer_accesses_process_block(start, end, fix, entry_regs, accesses):
         return rv.value
 
     # Initialize our registers and create accessor functions.
-    regs = { reg: RegValue(DELTA, delta) for reg, delta in entry_regs.items() }
+    regs = { reg: RegValue(DELTA, delta) for reg, delta in list(entry_regs.items()) }
 
     # For each instruction in the basic block, see if any new register gets assigned.
     for insn in idau.Instructions(start, end):
@@ -93,7 +94,7 @@ def _pointer_accesses_process_block(start, end, fix, entry_regs, accesses):
         # the caller to ensure that this initialization is correct.
         fixed_regs_and_deltas = fix.get(insn.ea)
         if fixed_regs_and_deltas:
-            for reg, delta in fixed_regs_and_deltas.items():
+            for reg, delta in list(fixed_regs_and_deltas.items()):
                 _log(6, '\t\t{:x}  fix {}={}', insn.ea, reg, delta)
                 regs[reg] = RegValue(DELTA, delta)
         # If this is an access instruction, record the access. See comment about auxpref below.
@@ -183,7 +184,7 @@ def _pointer_accesses_process_block(start, end, fix, entry_regs, accesses):
                         or (insn.auxpref & _ARM64_WRITEBACK and op.type == idaapi.o_displ)):
                     _log(6, '\t\t{:x}  clear {}', insn.ea, op.reg)
                     regs.pop(op.reg, None)
-    return { reg: rv.value for reg, rv in regs.items() if rv.type == DELTA }
+    return { reg: rv.value for reg, rv in list(regs.items()) if rv.type == DELTA }
 
 def _pointer_accesses_data_flow(flow, initialization, accesses):
     """Run the data flow for pointer_accesses."""

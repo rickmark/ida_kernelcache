@@ -6,6 +6,9 @@
 #
 
 from __future__ import absolute_import
+from builtins import next
+from builtins import range
+from builtins import object
 from collections import defaultdict
 
 import idc
@@ -31,13 +34,13 @@ _MEMOP_WBINDEX   = _MEMOP_PREINDEX | _MEMOP_POSTINDEX
 class _Regs(object):
     """A set of registers for _emulate_arm64."""
 
-    class _Unknown:
+    class _Unknown(object):
         """A wrapper class indicating that the value is unknown."""
         def __add__(self, other):
             return _Regs.Unknown
         def __radd__(self, other):
             return _Regs.Unknown
-        def __nonzero__(self):
+        def __bool__(self):
             return False
 
     _reg_names = idautils.GetRegisterList()
@@ -141,7 +144,7 @@ class _OneToOneMapFactory(object):
 
     def _make_unique_oneway(self, xs_to_ys, ys_to_xs, bad_x=None):
         """Internal helper to make one direction unique."""
-        for x, ys in xs_to_ys.items():
+        for x, ys in list(xs_to_ys.items()):
             if len(ys) != 1:
                 if bad_x:
                     bad_x(x, ys)
@@ -152,7 +155,7 @@ class _OneToOneMapFactory(object):
     def _build_oneway(self, xs_to_ys):
         """Build a one-way mapping after pruning."""
         x_to_y = dict()
-        for x, ys in xs_to_ys.items():
+        for x, ys in list(xs_to_ys.items()):
             x_to_y[x] = next(iter(ys))
         return x_to_y
 
@@ -218,7 +221,7 @@ def _collect_metaclasses():
     # Return the final dictionary of metaclass info.
     metaclass_to_classname = metaclass_to_classname_builder.build(bad_metaclass, bad_classname)
     metaclass_info = dict()
-    for metaclass, classname in metaclass_to_classname.items():
+    for metaclass, classname in list(metaclass_to_classname.items()):
         meta_superclass = metaclass_to_meta_superclass[metaclass]
         superclass_name = metaclass_to_classname.get(meta_superclass, None)
         metaclass_info[metaclass] = classes.ClassInfo(classname, metaclass, None, None,
@@ -302,7 +305,7 @@ def _collect_vtables(metaclass_info):
     metaclass_to_vtable = metaclass_to_vtable_builder.build(bad_metaclass, bad_vtable)
     # The resulting mapping may have fewer metaclasses than metaclass_info.
     class_info = dict()
-    for metaclass, classinfo in metaclass_info.items():
+    for metaclass, classinfo in list(metaclass_info.items()):
         # Add the vtable and its length, which we didn't have earlier. If the current class doesn't
         # have a vtable, take it from the superclass (recursing if necessary).
         metaclass_with_vtable = metaclass

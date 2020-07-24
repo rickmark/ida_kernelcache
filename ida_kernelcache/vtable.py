@@ -6,6 +6,8 @@
 #
 
 from __future__ import absolute_import
+from builtins import next
+from builtins import range
 from itertools import islice, takewhile
 
 import idc
@@ -136,7 +138,7 @@ def _convert_vtable_methods_to_functions(vtable, length):
 def initialize_vtables():
     """Convert vtables into offsets and ensure that virtual methods are IDA functions."""
     classes.collect_class_info()
-    for vtable, length in classes.vtables.items():
+    for vtable, length in list(classes.vtables.items()):
         if not convert_vtable_to_offsets(vtable, length):
             _log(0, 'Could not convert vtable at address {:x} into offsets', vtable)
         _convert_vtable_methods_to_functions(vtable, length)
@@ -161,7 +163,7 @@ def add_vtable_symbol(vtable, classname):
 def initialize_vtable_symbols():
     """Populate IDA with virtual method table symbols for an iOS kernelcache."""
     classes.collect_class_info()
-    for classname, classinfo in classes.class_info.items():
+    for classname, classinfo in list(classes.class_info.items()):
         if classinfo.vtable:
             _log(3, 'Class {} has vtable at {:#x}', classname, classinfo.vtable)
             if not add_vtable_symbol(classinfo.vtable, classname):
@@ -411,6 +413,6 @@ def initialize_vtable_method_symbols():
     """
     processed = set()
     classes.collect_class_info()
-    for classinfo in classes.class_info.values():
+    for classinfo in list(classes.class_info.values()):
         _symbolicate_overrides_for_classinfo(classinfo, processed)
 

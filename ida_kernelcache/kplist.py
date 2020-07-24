@@ -7,6 +7,7 @@
 #
 
 from __future__ import absolute_import
+from builtins import object
 import base64
 from xml.etree.ElementTree import XMLTreeBuilder
 

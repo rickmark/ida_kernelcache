@@ -7,6 +7,8 @@
 #
 
 from __future__ import absolute_import
+from builtins import str
+from builtins import range
 import idc
 
 from . import ida_utilities as idau

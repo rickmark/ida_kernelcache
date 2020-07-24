@@ -8,6 +8,8 @@
 #
 
 from __future__ import absolute_import
+from builtins import hex
+from builtins import object
 from . import collect_classes
 from . import ida_utilities as idau
 from . import vtable
