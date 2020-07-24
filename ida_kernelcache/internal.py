@@ -6,18 +6,21 @@
 #
 
 from __future__ import absolute_import
-from builtins import str
-from builtins import range
+
 from collections import defaultdict
 
 import idc
+from builtins import range
+from builtins import str
+from six.moves import range
 
 from . import ida_utilities as idau
-from six.moves import range
+
 
 def make_name_generator(suffix, max_count=999999):
     """Create a unique name generator using the specified template factory."""
     next_index_dict = defaultdict(lambda: 1)
+
     def get_next(name):
         assert name, 'Invalid symbol name passed to name generator'
         assert suffix not in name, 'Symbol name passed to name generator already contains suffix'
@@ -29,5 +32,5 @@ def make_name_generator(suffix, max_count=999999):
                 return new_name
         new_index_dict[name] = max_count
         return None
-    return get_next
 
+    return get_next

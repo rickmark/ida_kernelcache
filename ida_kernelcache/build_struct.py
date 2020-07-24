@@ -6,19 +6,18 @@
 #
 
 from __future__ import absolute_import
-import collections
 
 import idc
-import idautils
-import idaapi
 
 from . import ida_utilities as idau
 
 _log = idau.make_log(3, __name__)
 
+
 def field_name(offset):
     """Automatically generated IDA structs have their fields named by their absolute offset."""
     return 'field_{:x}'.format(offset)
+
 
 def create_struct_fields(sid=None, name=None, accesses=None, create=False, base=0):
     """Create an IDA struct with fields corresponding to the specified access pattern.
@@ -68,6 +67,5 @@ def create_struct_fields(sid=None, name=None, accesses=None, create=False, base=
             else:
                 success = False
                 _log(1, 'Could not add {}.{} for access ({}, {}): {}', name, member, offset, size,
-                        ret)
+                     ret)
     return success
-

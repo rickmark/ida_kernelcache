@@ -11,10 +11,12 @@ strings.
 """
 
 from __future__ import absolute_import
+
 import re
 
-import idc
 import idaapi
+import idc
+
 
 def method_name(symbol):
     """Get the name of the C++ method from its symbol.
@@ -22,12 +24,13 @@ def method_name(symbol):
     If the symbol demangles to 'Class::method(args)', this function returns 'method'.
     """
     try:
-        demangled  = idc.Demangle(symbol, idc.GetLongPrm(idc.INF_SHORT_DN))
-        func       = demangled.split('::', 1)[1]
-        base       = func.split('(', 1)[0]
+        demangled = idc.Demangle(symbol, idc.GetLongPrm(idc.INF_SHORT_DN))
+        func = demangled.split('::', 1)[1]
+        base = func.split('(', 1)[0]
         return base or None
     except:
         return None
+
 
 def method_arguments_string(symbol):
     """Get the arguments string of the C++ method from its symbol.
@@ -35,13 +38,14 @@ def method_arguments_string(symbol):
     If the symbol demangles to 'Class::method(arg1, arg2)', this function returns 'arg1, arg2'.
     """
     try:
-        demangled  = idc.Demangle(symbol, idc.GetLongPrm(idc.INF_LONG_DN))
-        func       = demangled.split('::', 1)[1]
-        args       = func.split('(', 1)[1]
-        args       = args.rsplit(')', 1)[0].strip()
+        demangled = idc.Demangle(symbol, idc.GetLongPrm(idc.INF_LONG_DN))
+        func = demangled.split('::', 1)[1]
+        args = func.split('(', 1)[1]
+        args = args.rsplit(')', 1)[0].strip()
         return args
     except:
         return None
+
 
 def method_arguments(symbol):
     """Get the arguments list of the C++ method from its symbol.
@@ -73,6 +77,7 @@ def method_arguments(symbol):
     except:
         return None
 
+
 def method_argument_pointer_types(symbol):
     """Get the base types of pointer types used in the arguments to a C++ method."""
     args = method_arguments_string(symbol)
@@ -89,8 +94,9 @@ def method_argument_pointer_types(symbol):
         if re.match(r"[^ ]+ [*][* ]*", argtype):
             ptrtypes.add(argtype.split(' ', 1)[0])
     ptrtypes.difference_update(['void', 'bool', 'char', 'short', 'int', 'long', 'float', 'double',
-        'longlong', '__int64'])
+                                'longlong', '__int64'])
     return ptrtypes
+
 
 def method_argument_types(symbol, sign=True):
     """Get the base types used in the arguments to a C++ method."""
@@ -110,6 +116,7 @@ def method_argument_types(symbol, sign=True):
     except:
         return None
 
+
 def convert_function_type_to_function_pointer_type(typestr):
     """Convert a function type string into a function pointer type string.
 
@@ -122,6 +129,7 @@ def convert_function_type_to_function_pointer_type(typestr):
     except:
         return None
 
+
 def make_ident(name):
     """Convert a name into a valid identifier, substituting any invalid characters."""
     ident = ''
@@ -131,6 +139,7 @@ def make_ident(name):
         else:
             ident += '_'
     return ident
+
 
 def _mangle_name(scopes):
     symbol = ''
@@ -143,6 +152,7 @@ def _mangle_name(scopes):
     if len(scopes) > 1:
         symbol += 'E'
     return symbol
+
 
 def vtable_symbol_for_class(classname):
     """Get the mangled symbol name for the vtable for the given class name.
@@ -158,6 +168,7 @@ def vtable_symbol_for_class(classname):
         return None
     return '__ZTV' + name
 
+
 def vtable_symbol_get_class(symbol):
     """Get the class name for a vtable symbol."""
     try:
@@ -167,6 +178,7 @@ def vtable_symbol_get_class(symbol):
         return post
     except:
         return None
+
 
 def global_name(name):
     """Get the mangled symbol name for the global name.
@@ -181,4 +193,3 @@ def global_name(name):
     if not mangled:
         return None
     return '__Z' + mangled
-

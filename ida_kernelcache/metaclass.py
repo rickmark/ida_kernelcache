@@ -6,13 +6,13 @@
 #
 
 from __future__ import absolute_import
-import idc
 
-from . import ida_utilities as idau
 from . import classes
+from . import ida_utilities as idau
 from . import symbol
 
 _log = idau.make_log(0, __name__)
+
 
 def metaclass_name_for_class(classname):
     """Return the name of the C++ metaclass for the given class."""
@@ -20,11 +20,13 @@ def metaclass_name_for_class(classname):
         return None
     return classname + '::MetaClass'
 
+
 def metaclass_instance_name_for_class(classname):
     """Return the name of the C++ metaclass instance for the given class."""
     if '::' in classname:
         return None
     return classname + '::gMetaClass'
+
 
 def metaclass_symbol_for_class(classname):
     """Get the symbol name for the OSMetaClass instance for the given class name.
@@ -40,6 +42,7 @@ def metaclass_symbol_for_class(classname):
         return None
     return symbol.global_name(metaclass_instance)
 
+
 def add_metaclass_symbol(metaclass, classname):
     """Add a symbol for the OSMetaClass instance at the specified address.
 
@@ -53,9 +56,10 @@ def add_metaclass_symbol(metaclass, classname):
     metaclass_symbol = metaclass_symbol_for_class(classname)
     if not idau.set_ea_name(metaclass, metaclass_symbol):
         _log(0, 'Address {:#x} already has name {} instead of OSMetaClass instance symbol {}'
-                .format(metaclass, idau.get_ea_name(metaclass), metaclass_symbol))
+             .format(metaclass, idau.get_ea_name(metaclass), metaclass_symbol))
         return False
     return True
+
 
 def initialize_metaclass_symbols():
     """Populate IDA with OSMetaClass instance symbols for an iOS kernelcache.
@@ -69,7 +73,6 @@ def initialize_metaclass_symbols():
             _log(1, 'Class {} has OSMetaClass instance at {:#x}', classname, classinfo.metaclass)
             if not add_metaclass_symbol(classinfo.metaclass, classname):
                 _log(0, 'Could not add metaclass symbol for class {} at address {:#x}', classname,
-                        classinfo.metaclass)
+                     classinfo.metaclass)
         else:
             _log(1, 'Class {} has no known OSMetaClass instance', classname)
-

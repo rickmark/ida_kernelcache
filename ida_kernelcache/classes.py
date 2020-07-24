@@ -8,8 +8,9 @@
 #
 
 from __future__ import absolute_import
-from builtins import hex
+
 from builtins import object
+
 from . import collect_classes
 from . import ida_utilities as idau
 from . import vtable
@@ -20,18 +21,19 @@ class_info = {}
 vtables = {}
 """A global map from the address each virtual method tables in the kernelcache to its length."""
 
+
 class ClassInfo(object):
     """Information about a C++ class in a kernelcache."""
 
     def __init__(self, classname, metaclass, vtable, vtable_length, class_size, superclass_name,
-            meta_superclass):
-        self.superclass      = None
-        self.subclasses      = set()
-        self.classname       = classname
-        self.metaclass       = metaclass
-        self.vtable          = vtable
-        self.vtable_length   = vtable_length
-        self.class_size      = class_size
+                 meta_superclass):
+        self.superclass = None
+        self.subclasses = set()
+        self.classname = classname
+        self.metaclass = metaclass
+        self.vtable = vtable
+        self.vtable_length = vtable_length
+        self.class_size = class_size
         self.superclass_name = superclass_name
         self.meta_superclass = meta_superclass
 
@@ -40,10 +42,11 @@ class ClassInfo(object):
             if x is None:
                 return repr(None)
             return '{:#x}'.format(x)
+
         return 'ClassInfo({!r}, {}, {}, {}, {}, {!r}, {})'.format(
-                self.classname, hex(self.metaclass), hex(self.vtable),
-                self.vtable_length, self.class_size, self.superclass_name,
-                hex(self.meta_superclass))
+            self.classname, hex(self.metaclass), hex(self.vtable),
+            self.vtable_length, self.class_size, self.superclass_name,
+            hex(self.meta_superclass))
 
     @property
     def vtable_methods(self):
@@ -84,6 +87,7 @@ class ClassInfo(object):
         for subclass in self.subclasses:
             for descendant in subclass.descendants(inclusive=True):
                 yield descendant
+
 
 def collect_class_info():
     """Collect information about C++ classes defined in a kernelcache.

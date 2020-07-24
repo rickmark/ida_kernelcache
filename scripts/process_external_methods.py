@@ -9,9 +9,10 @@
 
 from __future__ import absolute_import
 from __future__ import print_function
+
+
 def kernelcache_process_external_methods(ea=None, struct_type=None, count=None):
     import idc
-    import ida_kernelcache as kc
     import ida_kernelcache.ida_utilities as idau
 
     kIOUCVariableStructureSize = 0xffffffff
@@ -25,10 +26,10 @@ def kernelcache_process_external_methods(ea=None, struct_type=None, count=None):
     kIOUCFlags = 0xff
 
     IOExternalMethod_types = (kIOUCScalarIScalarO, kIOUCScalarIStructO, kIOUCStructIStructO,
-            kIOUCScalarIStructI)
+                              kIOUCScalarIStructI)
 
     IOExternalMethod_count0_scalar = (kIOUCScalarIScalarO, kIOUCScalarIStructO,
-            kIOUCScalarIStructI)
+                                      kIOUCScalarIStructI)
 
     IOExternalMethod_count1_scalar = (kIOUCScalarIScalarO,)
 
@@ -76,9 +77,9 @@ def kernelcache_process_external_methods(ea=None, struct_type=None, count=None):
         return (isc, iss, osc, oss)
 
     TYPE_MAP = {
-            'IOExternalMethodDispatch':
-                (is_IOExternalMethodDispatch, process_IOExternalMethodDispatch),
-            'IOExternalMethod': (is_IOExternalMethod, process_IOExternalMethod),
+        'IOExternalMethodDispatch':
+            (is_IOExternalMethodDispatch, process_IOExternalMethodDispatch),
+        'IOExternalMethod': (is_IOExternalMethod, process_IOExternalMethod),
     }
 
     # Get the EA.
@@ -116,5 +117,5 @@ def kernelcache_process_external_methods(ea=None, struct_type=None, count=None):
 
     return True
 
-kernelcache_process_external_methods()
 
+kernelcache_process_external_methods()

@@ -6,40 +6,45 @@
 #
 
 from __future__ import absolute_import
-from builtins import next
-from builtins import range
-from builtins import object
+
 from collections import defaultdict
 
-import idc
-import idautils
 import idaapi
+import idautils
+import idc
+import six
+from builtins import next
+from builtins import object
+from builtins import range
+from six.moves import range
 
-from . import ida_utilities as idau
 from . import classes
+from . import ida_utilities as idau
 from . import segment
 from . import symbol
 from . import vtable
-import six
-from six.moves import range
 
 _log = idau.make_log(1, __name__)
 
 # IDK where IDA defines these.
-_MEMOP_PREINDEX  = 0x20
+_MEMOP_PREINDEX = 0x20
 _MEMOP_POSTINDEX = 0x80
 
-_MEMOP_WBINDEX   = _MEMOP_PREINDEX | _MEMOP_POSTINDEX
+_MEMOP_WBINDEX = _MEMOP_PREINDEX | _MEMOP_POSTINDEX
+
 
 class _Regs(object):
     """A set of registers for _emulate_arm64."""
 
     class _Unknown(object):
         """A wrapper class indicating that the value is unknown."""
+
         def __add__(self, other):
             return _Regs.Unknown
+
         def __radd__(self, other):
             return _Regs.Unknown
+
         def __bool__(self):
             return False
 
@@ -75,11 +80,13 @@ class _Regs(object):
         else:
             self._regs[self._reg(reg)] = value & 0xffffffffffffffff
 
+
 def _emulate_arm64(start, end, on_BL=None, on_RET=None):
     """A very basic partial Arm64 emulator that does just enough to find OSMetaClass
     information."""
     # Super basic emulation.
     reg = _Regs()
+
     def load(addr, dtyp):
         if not addr:
             return None
@@ -90,9 +97,11 @@ def _emulate_arm64(start, end, on_BL=None, on_RET=None):
         else:
             return None
         return idau.read_word(addr, size)
+
     def cleartemps():
         for t in ['X{}'.format(i) for i in range(0, 19)]:
             reg.clear(t)
+
     for insn in idau.Instructions(start, end):
         _log(11, 'Processing instruction {:#x}', insn.ea)
         mnem = insn.get_canon_mnem()
@@ -129,6 +138,7 @@ def _emulate_arm64(start, end, on_BL=None, on_RET=None):
         else:
             _log(10, 'Unrecognized instruction at address {:#x}', insn.ea)
             reg.clearall()
+
 
 class _OneToOneMapFactory(object):
     """A factory to extract the largest one-to-one submap."""
@@ -167,9 +177,11 @@ class _OneToOneMapFactory(object):
         self._make_unique_oneway(bs_to_as, as_to_bs, bad_b)
         return self._build_oneway(as_to_bs)
 
+
 def _process_mod_init_func_for_metaclasses(func, found_metaclass):
     """Process a function from the __mod_init_func section for OSMetaClass information."""
     _log(4, 'Processing function {}', idc.GetFunctionName(func))
+
     def on_BL(addr, reg):
         X0, X1, X3 = reg['X0'], reg['X1'], reg['X3']
         if not (X0 and X1 and X3):
@@ -179,7 +191,9 @@ def _process_mod_init_func_for_metaclasses(func, found_metaclass):
         if not idc.SegName(X1).endswith("__TEXT.__cstring") or not idc.SegName(X0):
             return
         found_metaclass(X0, idc.GetString(X1), X3, reg['X2'] or None)
+
     _emulate_arm64(func, idc.FindFuncEnd(func), on_BL=on_BL)
+
 
 def _process_mod_init_func_section_for_metaclasses(segstart, found_metaclass):
     """Process a __mod_init_func section for OSMetaClass information."""
@@ -187,37 +201,44 @@ def _process_mod_init_func_section_for_metaclasses(segstart, found_metaclass):
     for func in idau.ReadWords(segstart, segend):
         _process_mod_init_func_for_metaclasses(func, found_metaclass)
 
+
 def _should_process_segment(seg, segname):
     """Check if we should process the specified segment."""
     return segname.endswith('__DATA_CONST.__mod_init_func') or \
-            segname == '__DATA.__kmod_init'
+           segname == '__DATA.__kmod_init'
+
 
 def _collect_metaclasses():
     """Collect OSMetaClass information from all kexts in the kernelcache."""
     # Collect associations from class names to metaclass instances and vice versa.
     metaclass_to_classname_builder = _OneToOneMapFactory()
-    metaclass_to_class_size      = dict()
+    metaclass_to_class_size = dict()
     metaclass_to_meta_superclass = dict()
+
     def found_metaclass(metaclass, classname, class_size, meta_superclass):
         metaclass_to_classname_builder.add_link(metaclass, classname)
-        metaclass_to_class_size[metaclass]      = class_size
+        metaclass_to_class_size[metaclass] = class_size
         metaclass_to_meta_superclass[metaclass] = meta_superclass
+
     for ea in idautils.Segments():
         segname = idc.SegName(ea)
         if not _should_process_segment(ea, segname):
             continue
         _log(2, 'Processing segment {}', segname)
         _process_mod_init_func_section_for_metaclasses(ea, found_metaclass)
+
     # Filter out any class name (and its associated metaclasses) that has multiple metaclasses.
     # This can happen when multiple kexts define a class but only one gets loaded.
     def bad_classname(classname, metaclasses):
         _log(0, 'Class {} has multiple metaclasses: {}', classname,
-                ', '.join(['{:#x}'.format(mc) for mc in metaclasses]))
+             ', '.join(['{:#x}'.format(mc) for mc in metaclasses]))
+
     # Filter out any metaclass (and its associated class names) that has multiple class names. I
     # have no idea why this would happen.
     def bad_metaclass(metaclass, classnames):
         _log(0, 'Metaclass {:#x} has multiple classes: {}', metaclass,
-                ', '.join(classnames))
+             ', '.join(classnames))
+
     # Return the final dictionary of metaclass info.
     metaclass_to_classname = metaclass_to_classname_builder.build(bad_metaclass, bad_classname)
     metaclass_info = dict()
@@ -225,22 +246,28 @@ def _collect_metaclasses():
         meta_superclass = metaclass_to_meta_superclass[metaclass]
         superclass_name = metaclass_to_classname.get(meta_superclass, None)
         metaclass_info[metaclass] = classes.ClassInfo(classname, metaclass, None, None,
-                metaclass_to_class_size[metaclass], superclass_name, meta_superclass)
+                                                      metaclass_to_class_size[metaclass], superclass_name,
+                                                      meta_superclass)
     return metaclass_info
 
-_VTABLE_GETMETACLASS    = vtable.VTABLE_OFFSET + 7
+
+_VTABLE_GETMETACLASS = vtable.VTABLE_OFFSET + 7
 _MAX_GETMETACLASS_INSNS = 3
+
 
 def _get_vtable_metaclass(vtable_addr, metaclass_info):
     """Simulate the getMetaClass method of the vtable and check if it returns an OSMetaClass."""
     getMetaClass = idau.read_word(vtable_addr + _VTABLE_GETMETACLASS * idau.WORD_SIZE)
+
     def on_RET(reg):
         on_RET.ret = reg['X0']
+
     on_RET.ret = None
     _emulate_arm64(getMetaClass, getMetaClass + idau.WORD_SIZE * _MAX_GETMETACLASS_INSNS,
-            on_RET=on_RET)
+                   on_RET=on_RET)
     if on_RET.ret in metaclass_info:
         return on_RET.ret
+
 
 def _process_const_section_for_vtables(segstart, metaclass_info, found_vtable):
     """Process a __const section to search for virtual method tables."""
@@ -255,11 +282,13 @@ def _process_const_section_for_vtables(segstart, metaclass_info, found_vtable):
                 found_vtable(metaclass, addr, length)
         addr += length * idau.WORD_SIZE
 
+
 def _collect_vtables(metaclass_info):
     """Use OSMetaClass information to search for virtual method tables."""
     # Build a mapping from OSMetaClass instances to virtual method tables.
     metaclass_to_vtable_builder = _OneToOneMapFactory()
     vtable_lengths = {}
+
     # Define a callback for when we find a vtable.
     def found_vtable(metaclass, vtable, length):
         # Add our vtable length.
@@ -277,11 +306,12 @@ def _collect_vtables(metaclass_info):
             vtable_classname = symbol.vtable_symbol_get_class(vtable_symbol)
             if vtable_classname != classname:
                 _log(2, 'Declining association between metaclass {:x} ({}) and vtable {:x} ({})',
-                        metaclass, classname, vtable, vtable_classname)
+                     metaclass, classname, vtable, vtable_classname)
                 return
         # Add a link if they are in the same kext.
         if segment.kernelcache_kext(metaclass) == segment.kernelcache_kext(vtable):
             metaclass_to_vtable_builder.add_link(metaclass, vtable)
+
     # Process all the segments with found_vtable().
     for ea in idautils.Segments():
         segname = idc.SegName(ea)
@@ -289,6 +319,7 @@ def _collect_vtables(metaclass_info):
             continue
         _log(2, 'Processing segment {}', segname)
         _process_const_section_for_vtables(ea, metaclass_info, found_vtable)
+
     # If a metaclass has multiple vtables, that's really weird, unless the metaclass is
     # OSMetaClass's metaclass. In that case all OSMetaClass subclasses will have their vtables
     # refer back to OSMetaClass's metaclass.
@@ -297,11 +328,13 @@ def _collect_vtables(metaclass_info):
         if metaclass_name != 'OSMetaClass':
             vtinfo = ['{:#x}'.format(vt) for vt in vtables]
             _log(0, 'Metaclass {:#x} ({}) has multiple vtables: {}', metaclass,
-                    metaclass_name, ', '.join(vtinfo))
+                 metaclass_name, ', '.join(vtinfo))
+
     # If a vtable has multiple metaclasses, that's really weird.
     def bad_vtable(vtable, metaclasses):
         mcinfo = ['{:#x} ({})'.format(mc, metaclass_info[mc].classname) for mc in metaclasses]
         _log(0, 'Vtable {:#x} has multiple metaclasses: {}', vtable, ', '.join(mcinfo))
+
     metaclass_to_vtable = metaclass_to_vtable_builder.build(bad_metaclass, bad_vtable)
     # The resulting mapping may have fewer metaclasses than metaclass_info.
     class_info = dict()
@@ -312,7 +345,7 @@ def _collect_vtables(metaclass_info):
         while metaclass_with_vtable:
             vtable = metaclass_to_vtable.get(metaclass_with_vtable, None)
             if vtable:
-                classinfo.vtable        = vtable
+                classinfo.vtable = vtable
                 classinfo.vtable_length = vtable_lengths[vtable]
                 break
             classinfo_with_vtable = metaclass_info.get(metaclass_with_vtable, None)
@@ -329,9 +362,11 @@ def _collect_vtables(metaclass_info):
         class_info[classinfo.classname] = classinfo
     return class_info, vtable_lengths
 
+
 def _check_filetype(filetype):
     """Checks that the filetype is compatible before trying to process it."""
     return 'Mach-O' in filetype and 'ARM64' in filetype
+
 
 def collect_class_info_internal():
     """Collect information about C++ classes defined in a kernelcache.
@@ -354,4 +389,3 @@ def collect_class_info_internal():
         return None
     _log(1, 'Done')
     return class_info, all_vtables
-

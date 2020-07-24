@@ -6,17 +6,18 @@
 #
 
 from __future__ import absolute_import
+
 import re
 
-import idc
 import idautils
+import idc
 
 from . import ida_utilities as idau
 from . import internal
-from . import kernel
 from . import stub
 
 _log = idau.make_log(1, __name__)
+
 
 def initialize_data_offsets():
     """Convert offsets in data segments into offsets in IDA.
@@ -36,11 +37,13 @@ def initialize_data_offsets():
             if idau.is_mapped(word, value=False):
                 idc.OpOff(ea, 0, 0)
 
+
 kernelcache_offset_suffix = '___offset_'
 """The suffix that gets appended to a symbol to create the offset name, without the offset ID."""
 
 _offset_regex = re.compile(r"^(\S+)" + kernelcache_offset_suffix + r"\d+$")
 """A regular expression to match and extract the target name from an offset symbol."""
+
 
 def offset_name_target(offset_name):
     """Get the target to which an offset name refers.
@@ -51,6 +54,7 @@ def offset_name_target(offset_name):
     if not match:
         return None
     return match.group(1)
+
 
 def _process_offset(offset, ea, next_offset):
     """Process an offset in a __got section."""
@@ -66,7 +70,7 @@ def _process_offset(offset, ea, next_offset):
     # comment in _symbolicate_stub.
     if stub.symbol_references_stub(name):
         _log(1, 'Offset at address {:#x} has target {:#x} (name {}) that references a stub', ea,
-                offset, name)
+             offset, name)
         return False
     # Set the new name for the offset.
     symbol = next_offset(name)
@@ -78,6 +82,7 @@ def _process_offset(offset, ea, next_offset):
         return False
     return True
 
+
 def _process_offsets_section(segstart, next_offset):
     """Process all the offsets in a __got section."""
     for offset, ea in idau.ReadWords(segstart, idc.SegEnd(segstart), addresses=True):
@@ -87,6 +92,7 @@ def _process_offsets_section(segstart, next_offset):
                 _process_offset(offset, ea, next_offset)
             else:
                 _log(-1, 'Offset {:#x} at address {:#x} is unmapped', offset, ea)
+
 
 def initialize_offset_symbols():
     """Populate IDA with information about the offsets in an iOS kernelcache.
@@ -103,4 +109,3 @@ def initialize_offset_symbols():
             continue
         _log(2, 'Processing segment {}', segname)
         _process_offsets_section(ea, next_offset)
-

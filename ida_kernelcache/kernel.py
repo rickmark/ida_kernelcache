@@ -7,21 +7,25 @@
 #
 
 from __future__ import absolute_import
-import idc
-import idautils
+
 import idaapi
+import idautils
+import idc
 
 from . import ida_utilities as idau
 from . import kplist
 
 _log = idau.make_log(0, __name__)
 
+
 def find_kernel_base():
     """Find the kernel base."""
     return idaapi.get_fileregion_ea(0)
 
+
 base = find_kernel_base()
 """The kernel base address (the address of the main kernel Mach-O header)."""
+
 
 def _find_prelink_info_segments():
     """Find all candidate __PRELINK_INFO segments (or sections).
@@ -40,8 +44,9 @@ def _find_prelink_info_segments():
         _log(0, 'Could not find any __PRELINK_INFO segment candidates')
     elif len(segments) > 1:
         _log(1, 'Multiple segment names contain __PRELINK_INFO: {}',
-                [idc.SegName(seg) for seg in segments])
+             [idc.SegName(seg) for seg in segments])
     return segments
+
 
 def parse_prelink_info():
     """Find and parse the kernel __PRELINK_INFO dictionary."""
@@ -54,16 +59,18 @@ def parse_prelink_info():
     _log(0, 'Could not find __PRELINK_INFO')
     return None
 
+
 prelink_info = parse_prelink_info()
 """The kernel __PRELINK_INFO dictionary."""
 
 KC_11_NORMAL = '11-normal'
 KC_12_MERGED = '12-merged'
 
+
 def _get_kernelcache_format():
     if '_PrelinkLinkKASLROffsets' in prelink_info:
         return KC_11_NORMAL
     return KC_12_MERGED
 
-kernelcache_format = _get_kernelcache_format()
 
+kernelcache_format = _get_kernelcache_format()

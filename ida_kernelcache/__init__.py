@@ -9,11 +9,11 @@
 # scripts.
 from __future__ import absolute_import
 from __future__ import print_function
-from . import ida_utilities
 
 from . import build_struct
 from . import class_struct
 from . import classes
+from . import ida_utilities
 from . import kernel
 from . import kplist
 from . import metaclass
@@ -22,10 +22,10 @@ from . import segment
 from . import stub
 from . import tagged_pointers
 from . import vtable
-
 from .classes import (ClassInfo, collect_class_info, class_info)
-from .kplist  import (kplist_parse)
+from .kplist import (kplist_parse)
 from .segment import (kernelcache_kext)
+
 
 def kernelcache_process(untag_pointers=True):
     """Process the kernelcache in IDA for the first time.
@@ -46,6 +46,7 @@ def kernelcache_process(untag_pointers=True):
     import idc
     def autoanalyze():
         idc.Wait()
+
     autoanalyze()
     if (kernel.kernelcache_format == kernel.KC_12_MERGED
             and untag_pointers
@@ -76,4 +77,3 @@ def kernelcache_process(untag_pointers=True):
     class_struct.initialize_class_structs()
     autoanalyze()
     print('Done')
-

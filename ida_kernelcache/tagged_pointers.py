@@ -12,30 +12,37 @@ approach is better because it is closer to what the kernelcache looks like at ru
 """
 
 from __future__ import absolute_import
-import idc
+
 import idautils
+import idc
 
 from . import ida_utilities as idau
 from . import kernel
 
 _log = idau.make_log(1, __name__)
 
+
 def tagged_pointer_tag(tp):
     return (tp >> 48) & 0xffff
+
 
 def tagged_pointer_untag(tp):
     return tp | 0xffff000000000000
 
+
 def is_tagged_pointer_format(value):
     return tagged_pointer_tag(value) != 0xffff and \
-            (value & 0x0000ffff00000000) == 0x0000fff000000000
+           (value & 0x0000ffff00000000) == 0x0000fff000000000
+
 
 def is_tagged_pointer(value):
     return is_tagged_pointer_format(value) and \
-            idau.is_mapped(tagged_pointer_untag(value), value=False)
+           idau.is_mapped(tagged_pointer_untag(value), value=False)
+
 
 def tagged_pointer_link(tag):
     return (tag >> 1) & ~0x3
+
 
 def tagged_pointer_next(ea, tp, end=None):
     assert ea
@@ -56,10 +63,12 @@ def tagged_pointer_next(ea, tp, end=None):
     # If we didn't find any tagged pointers at all, return None.
     return None
 
+
 def untag_pointer(ea, tp):
     _log(4, 'Untagging pointer at {:x}', ea)
     idau.patch_word(ea, tagged_pointer_untag(tp))
     idc.OpOff(ea, 0, 0)
+
 
 def untag_pointers_in_range(start, end):
     assert kernel.kernelcache_format == kernel.KC_12_MERGED, 'Wrong kernelcache format'
@@ -74,9 +83,9 @@ def untag_pointers_in_range(start, end):
             break
         untag_pointer(ea, tp)
 
+
 def untag_pointers():
     _log(2, 'Starting tagged pointer conversion')
     for seg in idautils.Segments():
         untag_pointers_in_range(idc.SegStart(seg), idc.SegEnd(seg))
     _log(2, 'Tagged pointer conversion complete')
-

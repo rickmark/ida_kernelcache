@@ -7,6 +7,8 @@
 
 from __future__ import absolute_import
 from __future__ import print_function
+
+
 def kernelcache_find_virtual_method_overrides(classname=None, method=None):
     import idc
     import idaapi
@@ -22,8 +24,9 @@ Find virtual method overrides
 <#The class#Class :{classname}>
 <#The virtual method#Method:{method}>""", {
                 'classname': idaapi.Form.StringInput(tp=idaapi.Form.FT_IDENT, swidth=swidth),
-                'method':    idaapi.Form.StringInput(tp=idaapi.Form.FT_IDENT, swidth=swidth),
+                'method': idaapi.Form.StringInput(tp=idaapi.Form.FT_IDENT, swidth=swidth),
             })
+
         def OnFormChange(self, fid):
             return 1
 
@@ -33,13 +36,13 @@ Find virtual method overrides
         f = MyForm()
         f.Compile()
         f.classname.value = classname or ''
-        f.method.value    = method    or ''
+        f.method.value = method or ''
         ok = f.Execute()
         if ok != 1:
             print('Cancelled')
             return False
         classname = f.classname.value
-        method    = f.method.value
+        method = f.method.value
         f.Free()
 
     if classname not in kc.class_info:
@@ -51,7 +54,7 @@ Find virtual method overrides
     found = False
     for classinfo in baseinfo.descendants():
         for _, override, _ in kc.vtable.class_vtable_overrides(classinfo, superinfo=baseinfo,
-                methods=True):
+                                                               methods=True):
             name = idc.NameEx(idc.BADADDR, override)
             demangled = idc.Demangle(name, idc.GetLongPrm(idc.INF_SHORT_DN))
             name = demangled if demangled else name
@@ -62,5 +65,5 @@ Find virtual method overrides
         print('No subclass of {} overrides {}'.format(classname, method))
     return found
 
-kernelcache_find_virtual_method_overrides()
 
+kernelcache_find_virtual_method_overrides()

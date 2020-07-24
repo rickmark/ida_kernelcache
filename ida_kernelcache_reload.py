@@ -7,10 +7,10 @@
 #
 
 from __future__ import absolute_import
+
 import sys
+
 for mod in list(sys.modules.keys()):
     if 'ida_kernelcache' in mod:
         del sys.modules[mod]
 
-import ida_kernelcache
-import ida_kernelcache as kc

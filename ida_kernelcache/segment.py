@@ -7,13 +7,14 @@
 #
 
 from __future__ import absolute_import
-from builtins import str
-from builtins import range
+
 import idc
+from builtins import range
+from builtins import str
+from six.moves import range
 
 from . import ida_utilities as idau
 from . import kernel
-from six.moves import range
 
 _log = idau.make_log(0, __name__)
 
@@ -24,48 +25,54 @@ idc.Til2Idb(-1, 'section_64')
 
 _LC_SEGMENT_64 = 0x19
 
+
 def _macho_segments_and_sections(ea):
     """A generator to iterate through a Mach-O file's segments and sections.
 
     Each iteration yields a tuple:
         (segname, segstart, segend, [(sectname, sectstart, sectend), ...])
     """
-    hdr   = idau.read_struct(ea, 'mach_header_64', asobject=True)
-    nlc   = hdr.ncmds
-    lc    = int(hdr) + len(hdr)
+    hdr = idau.read_struct(ea, 'mach_header_64', asobject=True)
+    nlc = hdr.ncmds
+    lc = int(hdr) + len(hdr)
     lcend = lc + hdr.sizeofcmds
     while lc < lcend and nlc > 0:
         loadcmd = idau.read_struct(lc, 'load_command', asobject=True)
         if loadcmd.cmd == _LC_SEGMENT_64:
             segcmd = idau.read_struct(lc, 'segment_command_64', asobject=True)
-            segname  = idau.null_terminated(segcmd.segname)
+            segname = idau.null_terminated(segcmd.segname)
             segstart = segcmd.vmaddr
-            segend   = segstart + segcmd.vmsize
-            sects    = []
-            sc  = int(segcmd) + len(segcmd)
+            segend = segstart + segcmd.vmsize
+            sects = []
+            sc = int(segcmd) + len(segcmd)
             for i in range(segcmd.nsects):
                 sect = idau.read_struct(sc, 'section_64', asobject=True)
-                sectname  = idau.null_terminated(sect.sectname)
+                sectname = idau.null_terminated(sect.sectname)
                 sectstart = sect.addr
-                sectend   = sectstart + sect.size
+                sectend = sectstart + sect.size
                 sects.append((sectname, sectstart, sectend))
                 sc += len(sect)
             yield (segname, segstart, segend, sects)
-        lc  += loadcmd.cmdsize
+        lc += loadcmd.cmdsize
         nlc -= 1
+
 
 def _initialize_segments_in_kext(kext, mach_header, skip=[]):
     """Rename the segments in the specified kext."""
+
     def log_seg(segname, segstart, segend):
         _log(3, '+ segment {: <20} {:x} - {:x}  ({:x})', segname, segstart, segend,
-            segend - segstart)
+             segend - segstart)
+
     def log_sect(sectname, sectstart, sectend):
         _log(3, '  section {: <20} {:x} - {:x}  ({:x})', sectname, sectstart, sectend,
-                sectend - sectstart)
+             sectend - sectstart)
+
     def log_gap(gapno, start, end, mapped):
         mapped = 'mapped' if mapped else 'unmapped'
         _log(3, '  gap     {: <20} {:x} - {:x}  ({:x}, {})', gapno, start, end,
-            end - start, mapped)
+             end - start, mapped)
+
     def process_region(segname, name, start, end):
         assert end >= start
         if segname in skip:
@@ -84,20 +91,22 @@ def _initialize_segments_in_kext(kext, mach_header, skip=[]):
         ida_segend = idc.SegEnd(ida_segstart)
         if start != ida_segstart or end != ida_segend:
             _log(0, 'IDA thinks segment {} {:x} - {:x} should be {:x} - {:x}', newname, start, end,
-                    ida_segstart, ida_segend)
+                 ida_segstart, ida_segend)
             return
         _log(2, 'Rename {:x} - {:x}: {} -> {}', start, end, idc.SegName(start), newname)
         idc.SegRename(start, newname)
+
     def process_gap(segname, gapno, start, end):
         mapped = idau.is_mapped(start)
         log_gap(gapno, start, end, mapped)
         if mapped:
             name = 'HEADER' if start == mach_header else '__gap_' + str(gapno)
             process_region(segname, name, start, end)
+
     for segname, segstart, segend, sects in _macho_segments_and_sections(mach_header):
         log_seg(segname, segstart, segend)
         lastend = segstart
-        gapno   = 0
+        gapno = 0
         for sectname, sectstart, sectend in sects:
             if lastend < sectstart:
                 process_gap(segname, gapno, lastend, sectstart)
@@ -108,6 +117,7 @@ def _initialize_segments_in_kext(kext, mach_header, skip=[]):
         if lastend < segend:
             process_gap(segname, gapno, lastend, segend)
             gapno += 1
+
 
 def initialize_segments():
     """Rename the kernelcache segments in IDA according to the __PRELINK_INFO data.
@@ -135,7 +145,9 @@ def initialize_segments():
             _log(1, 'Renaming segments in {}', kext)
             _initialize_segments_in_kext(kext, mach_header)
 
+
 _kext_regions = []
+
 
 def _initialize_kext_regions():
     """Get region information for each kext based on iOS 12's __PRELINK_INFO.__kmod_start.
@@ -158,7 +170,9 @@ def _initialize_kext_regions():
         _log(1, 'Adding module:  {:x} - {:x}  {}', segstart, segend, kmod_name)
         _kext_regions.append((segstart, segend, kmod_name))
 
+
 _initialize_kext_regions()
+
 
 def kernelcache_kext(ea):
     """Return the name of the kext to which the given linear address belongs.
@@ -177,4 +191,3 @@ def kernelcache_kext(ea):
             if start <= ea < end:
                 return kext
     return None
-

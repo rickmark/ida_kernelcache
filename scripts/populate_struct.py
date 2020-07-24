@@ -7,6 +7,8 @@
 
 from __future__ import absolute_import
 from __future__ import print_function
+
+
 def kernelcache_populate_struct(struct=None, address=None, register=None, delta=None):
     import idc
     import idautils
@@ -25,11 +27,12 @@ Automatically populate struct fields
 <#The address of the instruction at which the register points to the structure#Address  :{address}>
 <#The register containing the pointer to the structure#Register :{register}>
 <#The offset of the pointer from the start of the structure#Delta    :{delta}>""", {
-                'structure': idaapi.Form.StringInput( tp=idaapi.Form.FT_IDENT, swidth=swidth),
-                'address':   idaapi.Form.NumericInput(tp=idaapi.Form.FT_ADDR,  swidth=swidth, width=1000),
-                'register':  idaapi.Form.StringInput( tp=idaapi.Form.FT_IDENT, swidth=swidth),
-                'delta':     idaapi.Form.NumericInput(tp=idaapi.Form.FT_INT64, swidth=swidth),
+                'structure': idaapi.Form.StringInput(tp=idaapi.Form.FT_IDENT, swidth=swidth),
+                'address': idaapi.Form.NumericInput(tp=idaapi.Form.FT_ADDR, swidth=swidth, width=1000),
+                'register': idaapi.Form.StringInput(tp=idaapi.Form.FT_IDENT, swidth=swidth),
+                'delta': idaapi.Form.NumericInput(tp=idaapi.Form.FT_INT64, swidth=swidth),
             })
+
         def OnFormChange(self, fid):
             return 1
 
@@ -38,17 +41,17 @@ Automatically populate struct fields
         f = MyForm()
         f.Compile()
         f.structure.value = struct or ''
-        f.address.value   = address or idc.ScreenEA()
-        f.register.value  = register or 'X0'
-        f.delta.value     = delta or 0
+        f.address.value = address or idc.ScreenEA()
+        f.register.value = register or 'X0'
+        f.delta.value = delta or 0
         ok = f.Execute()
         if ok != 1:
             print('Cancelled')
             return False
-        struct   = f.structure.value
-        address  = f.address.value
+        struct = f.structure.value
+        address = f.address.value
         register = f.register.value
-        delta    = f.delta.value
+        delta = f.delta.value
         f.Free()
 
     # Check whether this struct is a class.
@@ -72,7 +75,7 @@ Automatically populate struct fields
         register_id = idaapi.str2reg(register)
     elif type(register) is int:
         register_id = register
-        register    = idaapi.get_reg_name(register_id, 8)
+        register = idaapi.get_reg_name(register_id, 8)
     if register_id is None or register_id < 0:
         print('Invalid register {}'.format(register))
         return False
@@ -87,7 +90,7 @@ Automatically populate struct fields
 
     type_name = 'class' if is_class else 'struct'
     print('{} = {}, address = {:#x}, register = {}, delta = {:#x}'.format(type_name, struct,
-            address, register, delta))
+                                                                          address, register, delta))
 
     if is_class:
         # Run the analysis.
@@ -95,7 +98,7 @@ Automatically populate struct fields
     else:
         # Run the data flow to collect the accesses and then add those fields to the struct.
         accesses = kc.data_flow.pointer_accesses(function=address,
-                initialization={ address: { register_id: delta } })
+                                                 initialization={address: {register_id: delta}})
         kc.build_struct.create_struct_fields(sid, accesses=accesses)
 
         # Set the offsets to stroff.
@@ -111,5 +114,5 @@ Automatically populate struct fields
     print('Done')
     return True
 
-kernelcache_populate_struct()
 
+kernelcache_populate_struct()
